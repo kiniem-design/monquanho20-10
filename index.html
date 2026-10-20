@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hành Trình Ký Ức 20/10 ✨ Vũ Trụ Dành Riêng Cho Bạn</title>
+
+    <!-- Bộ 3 Google Fonts hỗ trợ 100% tiếng Việt mượt mà, không lỗi dấu -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Dancing+Script:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tệp định dạng giao diện -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-stage="1" data-weather="twilight">
+
+    <!-- =================================================================
+         LỚP CANVAS ĐA TẦNG (KHÍ QUYỂN, VƯỜN HOA 3D, NGÂN HÀ & BỤI SAO)
+    ================================================================== -->
+    <canvas id="bg-world-canvas" aria-hidden="true"></canvas>
+    <canvas id="stardust-trail-canvas" aria-hidden="true"></canvas>
+
+    <!-- Lớp chuyển cảnh Điện ảnh (Negative Space & Light Burst) -->
+    <div id="cinematic-transition" class="cinematic-transition" aria-hidden="true">
+        <div class="transition-flash"></div>
+        <p id="transition-whisper" class="transition-whisper"></p>
+    </div>
+
+    <!-- Nhạc nền tùy chọn từ thư mục assets/audio/piano.mp3 -->
+    <audio id="bgm-audio" src="assets/audio/piano.mp3" preload="auto" loop></audio>
+
+    <!-- =================================================================
+         THANH ĐIỀU KHIỂN KHÍ QUYỂN & ÂM THANH (TOP HUD)
+    ================================================================== -->
+    <header class="hud-bar">
+        <div class="hud-left">
+            <span class="hud-badge" id="hud-stage-indicator">Giai đoạn 1/5 • Cánh Cửa Ký Ức</span>
+            <span class="hud-weather-pill" id="hud-weather-label">🌸 Sương Mù Hồng</span>
+        </div>
+        <div class="hud-right">
+            <button id="btn-weather-mode" class="hud-btn" type="button" title="Đổi thời tiết / ánh sáng môi trường">
+                <span>🌤️</span> <span class="hide-mobile">Khí quyển</span>
+            </button>
+            <button id="btn-audio-toggle" class="hud-btn active" type="button" title="Bật / Tắt âm thanh đa lớp">
+                <span id="audio-icon">🔊</span> <span class="hide-mobile" id="audio-text">Âm thanh: Bật</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- =================================================================
+         🟢 GIAI ĐOẠN 1: CÁNH CỬA KÝ ỨC (THE MEMORY LOCK)
+    ================================================================== -->
+    <main class="stage-viewport">
+        <section id="stage-1" class="stage-screen active" aria-label="Cánh Cửa Ký Ức">
+            <!-- Lớp kính sương mù tương tác lau bằng ngón tay/chuột -->
+            <div id="fog-overlay-wrapper" class="fog-wrapper">
+                <canvas id="fog-canvas"></canvas>
+                <div class="fog-instruction" id="fog-prompt">
+                    <span class="fog-hand-icon">🖐️</span>
+                    <p>Dùng ngón tay hoặc chuột lau nhẹ lớp sương mù trên kính...</p>
+                    <button id="btn-skip-fog" class="btn-text-subtle" type="button">Làm tan sương ngay ✨</button>
+                </div>
+            </div>
+
+            <!-- Hiệu ứng vết nứt vàng Kintsugi khi nhập sai quá 3 lần -->
+            <svg id="kintsugi-svg" class="kintsugi-overlay" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+                <path class="kintsugi-path" d="M500,500 L320,250 L100,180 M500,500 L680,220 L890,120 M500,500 L750,580 L950,520 M500,500 L420,780 L250,950 M320,250 L450,100 M680,220 L580,50 M420,780 L650,890" />
+            </svg>
+
+            <!-- Hộp khóa Glassmorphism -->
+            <div class="lock-card glass-panel" id="lock-card">
+                <div class="lock-header">
+                    <span class="lock-subtitle">Hộp Nhạc Ký Ức Bí Mật</span>
+                    <h1 class="lock-title">Cánh Cửa Thời Gian</h1>
+                    <p id="lock-hint-text" class="lock-hint">“Hãy chạm vào 4 nốt nhạc mở ra ngày đặc biệt của một nửa thế giới...”</p>
+                </div>
+
+                <!-- 4 Nụ hoa pha lê hiển thị mã PIN -->
+                <div class="pin-buds-container" id="pin-buds">
+                    <div class="pin-bud" data-index="0"><span class="bud-core">✿</span></div>
+                    <div class="pin-bud" data-index="1"><span class="bud-core">✿</span></div>
+                    <div class="pin-bud" data-index="2"><span class="bud-core">✿</span></div>
+                    <div class="pin-bud" data-index="3"><span class="bud-core">✿</span></div>
+                </div>
+
+                <!-- Bàn phím số Hộp nhạc (Music Box Keypad) -->
+                <div class="keypad-grid" id="keypad-grid">
+                    <button type="button" class="key-btn" data-key="1"><span class="key-num">1</span><span class="key-note">Do</span></button>
+                    <button type="button" class="key-btn" data-key="2"><span class="key-num">2</span><span class="key-note">Re</span></button>
+                    <button type="button" class="key-btn" data-key="3"><span class="key-num">3</span><span class="key-note">Mi</span></button>
+                    <button type="button" class="key-btn" data-key="4"><span class="key-num">4</span><span class="key-note">Fa</span></button>
+                    <button type="button" class="key-btn" data-key="5"><span class="key-num">5</span><span class="key-note">Sol</span></button>
+                    <button type="button" class="key-btn" data-key="6"><span class="key-num">6</span><span class="key-note">La</span></button>
+                    <button type="button" class="key-btn" data-key="7"><span class="key-num">7</span><span class="key-note">Si</span></button>
+                    <button type="button" class="key-btn" data-key="8"><span class="key-num">8</span><span class="key-note">Do'</span></button>
+                    <button type="button" class="key-btn" data-key="9"><span class="key-num">9</span><span class="key-note">Re'</span></button>
+                    <button type="button" class="key-btn key-action" id="btn-key-hint" title="Xem gợi ý">💡</button>
+                    <button type="button" class="key-btn" data-key="0"><span class="key-num">0</span><span class="key-note">Mi'</span></button>
+                    <button type="button" class="key-btn key-action" id="btn-key-clear" title="Xóa">⌫</button>
+                </div>
+
+                <!-- Mảnh ảnh gợi ý mờ xuất hiện khi nhập sai lần 2 -->
+                <div id="visual-clue-box" class="visual-clue hidden">
+                    <img id="clue-img" src="assets/images/memory-1.jpg" alt="Gợi ý kỷ niệm">
+                    <div class="clue-caption">Gợi ý thị giác: Ngày tôn vinh phái đẹp Việt Nam (4 chữ số)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             🟢 GIAI ĐOẠN 2: ĐIỂM CHẠM ĐÁNH THỨC & VƯỜN ĐỊA ĐÀNG 3D
+        ================================================================== -->
+        <section id="stage-2" class="stage-screen" aria-label="Điểm Chạm Đánh Thức & Vườn Địa Đàng 3D">
+            <!-- Pha 2A: Giọt sương cảm ứng Nhấn Giữ 3 Giây -->
+            <div id="awakening-container" class="awakening-box">
+                <div class="dewdrop-ring-wrapper">
+                    <svg class="progress-ring" width="220" height="220">
+                        <circle class="progress-ring-bg" cx="110" cy="110" r="96"></circle>
+                        <circle id="hold-progress-circle" class="progress-ring-fill" cx="110" cy="110" r="96"></circle>
+                    </svg>
+                    <button id="btn-dewdrop-hold" class="dewdrop-core" type="button" aria-label="Chạm và giữ 3 giây">
+                        <span class="fingerprint-svg">🌺</span>
+                        <span class="dewdrop-pulse"></span>
+                    </button>
+                </div>
+                <h2 id="awakening-status" class="awakening-title">Chạm và giữ để đánh thức mùa hoa...</h2>
+                <p id="awakening-sub" class="awakening-subtitle">Truyền hơi ấm của bạn trong 3 giây để hạt mầm nảy nở</p>
+            </div>
+
+            <!-- Pha 2B: Thung lũng hoa 3D, Bướm Tinh Linh & Phong bì dẫn dụ -->
+            <div id="eden-overlay" class="eden-overlay hidden">
+                <div class="eden-typography">
+                    <p class="eden-pre-title">Dành tặng người con gái tuyệt vời nhất</p>
+                    <h1 class="eden-main-title" id="pollen-title">Chúc Mừng Ngày Phụ Nữ Việt Nam 20/10</h1>
+                    <p class="eden-parallax-hint">✨ Nghiêng điện thoại hoặc di chuyển chuột để ngắm thung lũng hoa 3D</p>
+                </div>
+
+                <!-- Phong bì cổ điển bay lượn cùng cánh bướm ánh sáng -->
+                <div class="floating-envelope-cta" id="btn-open-envelope-stage">
+                    <div class="spirit-butterfly" aria-hidden="true">🦋</div>
+                    <div class="mini-envelope">
+                        <div class="mini-envelope-flap"></div>
+                        <div class="mini-wax-seal" id="mini-seal-initial">T</div>
+                    </div>
+                    <span class="envelope-cta-label">Chạm vào bức thư từ sâu trong vườn hoa ✨</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             🟢 GIAI ĐOẠN 3: BỨC THƯ TAY SỐNG ĐỘNG (THE LIVING LETTER)
+        ================================================================== -->
+        <section id="stage-3" class="stage-screen" aria-label="Bức Thư Tay Sống Động">
+            <!-- Pha 3A: Nghi thức mở phong bì & Thổi Microphone -->
+            <div id="envelope-ritual" class="envelope-ritual">
+                <div class="vintage-envelope" id="vintage-envelope">
+                    <div class="env-flap"></div>
+                    <div class="env-body"></div>
+                    <button id="btn-wax-seal" class="wax-seal-btn" type="button">
+                        <span id="wax-seal-letter">A</span>
+                    </button>
+                </div>
+                <div class="seal-instructions">
+                    <h3>Niêm Phong Ký Ức</h3>
+                    <p>Chạm vào dấu sáp vàng <strong>hoặc bật Mic và thổi nhẹ vào màn hình</strong> để làm tan lớp bụi vàng niêm phong</p>
+                    <div class="mic-controls">
+                        <button id="btn-enable-mic" class="btn-secondary" type="button">🎙️ Bật cảm biến hơi thở (Thổi nhẹ)</button>
+                        <div id="mic-meter-wrap" class="mic-meter hidden">
+                            <div id="mic-meter-bar" class="mic-meter-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pha 3B: Tờ giấy thư mỹ thuật & Máy chữ cảm xúc -->
+            <div id="letter-paper-wrapper" class="letter-paper-wrapper hidden">
+                <article class="letter-sheet">
+                    <div class="letter-Skip-bar">
+                        <span class="sound-context-badge" id="foley-indicator">🎹 Piano Độc Tấu</span>
+                        <button id="btn-skip-typing" class="btn-text-subtle" type="button">Hiện toàn bộ thư ⏩</button>
+                    </div>
+
+                    <header class="letter-header">
+                        <span id="letter-date-place" class="letter-date">Ngày 20 tháng 10 năm 2026</span>
+                        <h2 id="letter-salutation" class="letter-greeting">Gửi cô gái năm ấy chúng mình cùng đi qua thanh xuân,</h2>
+                    </header>
+
+                    <!-- Nội dung thư chạy hiệu ứng Humanized Typewriter + Ngòi bút sáng -->
+                    <div class="letter-body-container">
+                        <div id="letter-typed-content" class="letter-content"></div>
+                        <span id="pen-nib-cursor" class="pen-nib">✒️</span>
+                    </div>
+
+                    <!-- Cơ chế Mực Tàng Hình (Nhấn giữ truyền nhiệt để hiện dòng chữ ẩn) -->
+                    <div id="thermal-ink-box" class="thermal-ink-box hidden">
+                        <div class="thermal-glow-layer" id="thermal-glow"></div>
+                        <p class="thermal-prompt" id="thermal-prompt">🔥 <strong>Mực Tàng Hình:</strong> Nhấn và giữ ngón tay tại đây để hơi ấm làm hiện lên lời nhắn bí mật...</p>
+                        <p class="thermal-secret-text" id="thermal-secret-text"></p>
+                    </div>
+
+                    <!-- Chữ ký SVG tự vẽ bằng nét mực -->
+                    <footer id="letter-footer" class="letter-footer hidden">
+                        <div class="signature-block">
+                            <p class="signature-label">Thương mến,</p>
+                            <svg id="signature-svg" class="signature-svg" viewBox="0 0 360 100">
+                                <path id="signature-path" d="M20,65 C45,20 75,20 65,65 C55,90 95,40 120,55 C140,68 155,30 175,55 C195,75 220,25 255,48 C280,62 315,35 345,50" />
+                            </svg>
+                            <p id="signature-name" class="signature-printed">Người bạn luôn dõi theo bạn</p>
+                        </div>
+
+                        <button id="btn-to-stage-4" class="btn-golden-ticket" type="button">
+                            <span>Khám phá hành trình kỷ niệm ✨</span>
+                        </button>
+                    </footer>
+                </article>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             🟢 GIAI ĐOẠN 4: VŨ TRỤ KÝ ỨC ĐA CHIỀU (THE CONSTELLATION)
+        ================================================================== -->
+        <section id="stage-4" class="stage-screen" aria-label="Vũ Trụ Ký Ức Đa Chiều">
+            <div class="galaxy-hud">
+                <h2 class="galaxy-title">Chòm Sao Ký Ức Đa Chiều</h2>
+                <p class="galaxy-subtitle">Kéo ngang để xoay quỹ đạo 360° • Chạm vào từng bức ảnh Polaroid để lắng nghe và lật mở chuyện hậu trường</p>
+            </div>
+
+            <!-- Khung không gian 3D chứa 6 bức ảnh xoay theo quỹ đạo & dây ánh sáng -->
+            <div class="constellation-stage" id="constellation-stage">
+                <svg id="constellation-lines-svg" class="constellation-lines" viewBox="0 0 1200 700" preserveAspectRatio="none"></svg>
+                <div class="orbit-carousel" id="orbit-carousel">
+                    <!-- 6 thẻ Polaroid được khởi tạo tự động từ js/config.js -->
+                </div>
+            </div>
+
+            <div class="galaxy-footer-actions">
+                <button id="btn-prev-orbit" class="btn-orbit-nav" type="button">◀ Quỹ đạo trước</button>
+                <button id="btn-to-stage-5" class="btn-golden-ticket pulse-gold" type="button">
+                    <span>🌟 Điều bất ngờ cuối cùng (Hội tụ ngân hà)</span>
+                </button>
+                <button id="btn-next-orbit" class="btn-orbit-nav" type="button">Quỹ đạo tiếp ▶</button>
+            </div>
+
+            <!-- Modal Lật Mở Ký Ức 2 Mặt (2-Sided Hologram Polaroid Inspection) -->
+            <div id="polaroid-modal" class="polaroid-modal hidden" role="dialog" aria-modal="true">
+                <div class="modal-backdrop" id="modal-backdrop"></div>
+                <div class="polaroid-inspector-wrapper">
+                    <div class="polaroid-3d-card" id="inspector-card">
+                        <!-- Mặt trước Polaroid -->
+                        <div class="polaroid-face polaroid-front">
+                            <div class="hologram-sheen" id="hologram-sheen"></div>
+                            <div class="polaroid-img-box">
+                                <img id="modal-img" src="" alt="Ký ức">
+                                <span id="modal-date-badge" class="polaroid-date-tag"></span>
+                            </div>
+                            <h3 id="modal-caption" class="polaroid-caption"></h3>
+                            <p class="polaroid-flip-hint">🔄 Chạm nút bên dưới hoặc bấm vào thẻ để lật mặt sau</p>
+                        </div>
+
+                        <!-- Mặt sau Polaroid (Chuyện hậu trường + Voice Note) -->
+                        <div class="polaroid-face polaroid-back">
+                            <div class="back-paper-texture">
+                                <span class="back-stamp">HẬU TRƯỜNG KÝ ỨC 💌</span>
+                                <h4 id="modal-back-title" class="back-title"></h4>
+                                <p id="modal-back-story" class="back-story"></p>
+                                <blockquote id="modal-back-quote" class="back-quote"></blockquote>
+
+                                <!-- Trình phát Voice Note / Giai điệu tần số ký ức -->
+                                <div class="voice-note-box">
+                                    <button id="btn-play-voice" class="btn-voice-play" type="button">▶️ Nghe âm thanh ký ức</button>
+                                    <div class="voice-waveform" id="voice-waveform">
+                                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-controls">
+                        <button id="btn-flip-polaroid" class="btn-primary-glass" type="button">🔄 Lật mặt sau Polaroid</button>
+                        <button id="btn-close-modal" class="btn-secondary" type="button">Đóng lại ✕</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             🌟 GIAI ĐOẠN 5: CÁI KẾT ĐỌNG LẠI & QUÀ TẶNG MANG VỀ (GRAND FINALE)
+        ================================================================== -->
+        <section id="stage-5" class="stage-screen" aria-label="Cái Kết Đọng Lại & Quà Tặng Mang Về">
+            <div class="finale-layout">
+                <!-- Khu vực hội tụ biểu tượng Vô cực (Infinity Constellation) -->
+                <div class="convergence-banner">
+                    <span class="infinity-badge">∞ Chòm Sao Vĩnh Cửu</span>
+                    <h2 class="finale-heading">Mọi Khoảnh Khắc Đều Hội Tụ Thành Ánh Sáng</h2>
+                    <p class="finale-desc">Các bức ảnh kỷ niệm đã xếp thành biểu tượng Vô Cực ∞ phía sau ngân hà — đại diện cho một tình bạn không bao giờ phai nhạt.</p>
+                </div>
+
+                <!-- Tấm Thiệp Kỷ Niệm Tóm Tắt (Digital Keepsake Card) -->
+                <div class="keepsake-showcase">
+                    <div class="keepsake-card" id="keepsake-card">
+                        <div class="keepsake-border">
+                            <div class="keepsake-top-tag">HAPPY VIETNAMESE WOMEN'S DAY • 20.10.2026</div>
+                            <div class="keepsake-photo-frame">
+                                <img id="keepsake-featured-img" src="assets/images/memory-1.jpg" alt="Ảnh kỷ niệm đẹp nhất">
+                            </div>
+                            <h3 id="keepsake-recipient" class="keepsake-name">Gửi Người Bạn Tuyệt Vời Nhất</h3>
+                            <p id="keepsake-quote" class="keepsake-quote">“Cảm ơn vì đã luôn rực rỡ như ánh sao và dịu dàng như mùa thu.”</p>
+                            <div class="keepsake-footer-meta">
+                                <span>✨ Kỷ vật số độc bản</span>
+                                <button id="btn-switch-keepsake-img" class="btn-mini-switch" type="button">Đổi ảnh khác 🔄</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Các nút hành động cuối: Tải thiệp PNG, Mở AR thực tế tăng cường, Chơi lại -->
+                    <div class="finale-actions">
+                        <button id="btn-download-keepsake" class="btn-golden-ticket" type="button">
+                            📥 Tải Thiệp Lưu Niệm Về Máy (.PNG)
+                        </button>
+                        <button id="btn-open-ar" class="btn-primary-glass" type="button">
+                            🌷 Đặt Hoa Ánh Sáng 3D Lên Bàn (Chế độ AR & Quà Thật)
+                        </button>
+                        <button id="btn-restart-journey" class="btn-secondary" type="button">
+                            ↺ Trải nghiệm lại từ đầu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hộp thoại Thực Tế Tăng Cường (WebAR & Mật mã hộp quà ngoài đời) -->
+            <div id="ar-modal" class="polaroid-modal hidden" role="dialog" aria-modal="true">
+                <div class="ar-box glass-panel">
+                    <video id="ar-camera-video" class="ar-video" autoplay playsinline muted></video>
+                    <canvas id="ar-flower-canvas" class="ar-flower-canvas"></canvas>
+                    <div class="ar-overlay-ui">
+                        <span class="ar-badge">✨ Chế Độ Phygital AR (Kết nối thế giới thực)</span>
+                        <h4>Đóa Hoa Ánh Sáng & Mật Mã Quà Thật</h4>
+                        <p id="ar-riddle-text">Mật mã tìm hộp quà thật ngoài đời: Hãy kiểm tra ngăn kéo bàn học hoặc túi áo khoác quen thuộc của bạn nhé! 🎁</p>
+                        <button id="btn-close-ar" class="btn-secondary" type="button">Đóng chế độ AR ✕</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Tệp cấu hình và tệp xử lý logic chính -->
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
